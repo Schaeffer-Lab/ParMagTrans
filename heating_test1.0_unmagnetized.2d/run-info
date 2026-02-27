@@ -1,23 +1,25 @@
 build_info = {
-  "version": "4.4.4-306-g7e6138d-dirty",
-  "branch": "dev",
+  "version": "4.4.4-307-g8bcd017",
+  "branch": "cathode-GPU",
   "dimensions": "2",
   "precision": "DOUBLE",
   "build_type": "production",
-  "system": "macosx-m1.gnu",
+  "system": "chablis.gnu",
   "build_tool": "make",
   "build_flags": {
-    "FPP"  :"/opt/homebrew//bin/mpicc -C -E -x assembler-with-cpp -D__HAS_MPI_IN_PLACE__ -D_OPENMP -DHDF5",
-    "FPPF" :"-DP_X_DIM=2 -DOS_REV=\"4.4.4-306-g7e6138d-dirty\" -DFORTRANSINGLEUNDERSCORE -DPRECISION_DOUBLE -DENABLE_TILES",
-    "F90"  :"/opt/homebrew//bin/mpif90 -Wa,-q",
-    "F90F" :"-pipe -ffree-line-length-none -fno-range-check -lgcc_s.1.1 --openmp -O3 -ffast-math -march=native -I/opt/homebrew/Cellar/open-mpi/5.0.9/include -Wl,-flat_namespace -I/opt/homebrew/Cellar/open-mpi/5.0.9/lib -I/opt/homebrew//include",
-    "CF"   :"-O3 -ffast-math -mcpu=apple-m1 -std=c99 -DFORTRANSINGLEUNDERSCORE -DPRECISION_DOUBLE -D__MACH_TIMER__",
-    "cc"   :"/opt/homebrew//bin/mpicc",
-    "LDF"  :" -L/opt/homebrew//lib -lhdf5_fortran -lhdf5 -lz -lm -I/opt/homebrew/Cellar/open-mpi/5.0.9/include -Wl,-flat_namespace -I/opt/homebrew/Cellar/open-mpi/5.0.9/lib -L/opt/homebrew/Cellar/open-mpi/5.0.9/lib -lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi ",
+    "FPP"  :"/usr/bin/gcc-11 -C -E -x assembler-with-cpp -fopenmp -pthread -DHDF5 -DH5_HAVE_PARALLEL",
+    "FPPF" :"-DP_X_DIM=2 -DOS_REV=\"4.4.4-307-g8bcd017\" -DFORTRANSINGLEUNDERSCORE -DPRECISION_DOUBLE -DSIMD -DSIMD_AVX2 -DENABLE_PY_UTIL -DENABLE_CUDA -DENABLE_TILES",
+    "F90"  :"/usr/bin/gfortran-11 -Wa,-q -cpp",
+    "F90F" :"-pipe -fall-intrinsics -ffree-line-length-none -fno-range-check -Wl,-Bdynamic -fopenmp -pthread -Ofast -march=native -ffpe-summary=none -I/usr/lib/x86_64-1 -gnu/openmpi/lib/../../fortran/gfortran-mod-15/openmpi -I/usr/lib/x86_64-1 -gnu/openmpi/lib -I/usr/include/hdf5/openmpi -I/home/dschneidinger/.conda/envs/osiris2/include/python3.14",
+    "CF"   :"-Ofast -march=native -std=c99  -DFORTRANSINGLEUNDERSCORE -DPRECISION_DOUBLE -DSIMD -DSIMD_AVX2 -D__POSIX_TIMER__ -I/home/dschneidinger/.conda/envs/osiris2/include/python3.14 -DENABLE_CUDA",
+    "cc"   :"/usr/bin/gcc-11 -Wa,-q -I/usr/lib/x86_64-1 -gnu/openmpi/include -fopenmp -pthread",
+    "LDF"  :"-pthread -lpthread -Wl,-rpath,/home/dschneidinger/.conda/envs/osiris2/lib -L/usr/lib/x86_64-1 -gnu/hdf5/openmpi -lhdf5hl_fortran -lhdf5_hl -lhdf5_fortran -lhdf5 -L/usr/lib/x86_64-1 -gnu -lcurl -lcrypto -lsz -ldl -lz -lm -I/usr/lib/x86_64-1-gnu/openmpi/lib -L/usr/lib/x86_64-1 -gnu/openmpi/lib/fortran/gfortran -lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi -lopen-rte -lopen-pal -lhwloc -levent_core -levent_pthreads -lm -lz -L/usr/lib/x86_64-1 -gnu -lcudart -lcuda -lcurand -dlto -lstdc++ -Wl,-rpath,/home/dschneidinger/.conda/envs/osiris2/lib -L/home/dschneidinger/.conda/envs/osiris2/lib -lpython3.14 -lssl -lcrypto",
+    "NVCCF"  :"-DP_X_DIM=2 -DOS_REV=\"4.4.4-307-g8bcd017\" -DFORTRANSINGLEUNDERSCORE -DPRECISION_DOUBLE -DSIMD -DSIMD_AVX2 -DENABLE_PY_UTIL -DENABLE_CUDA -DENABLE_TILES -I/usr/include -std=c++11 -dc -O3 -dlto -use_fast_math -extra-device-vectorization",
+    "NVCCLDF"  :"-dlink",
    }
 }
 run_info = {
-  "input_deck_crc":         1848885914.,
+  "input_deck_crc":         2026599005.,
   "input_deck": """
 !----------global simulation parameters----------
 simulation 
@@ -28,7 +30,7 @@ simulation
 !--------the node configuration for this simulation--------
 node_conf 
 {
-  node_number(1:2) = 2, 2,
+  node_number(1:2) = 4, 4,
   if_periodic(1:2) = .true., .true.,
   !tile_number(1:2) = 128,16,
   n_threads = 2,
@@ -45,7 +47,7 @@ grid
 time_step 
 {
   dt     =  3.4e-2,
-  ndump  =  1, 
+  ndump  =  16, 
 }
 
 !----------restart information----------
@@ -63,7 +65,7 @@ space
 !----------time limits ----------
 time 
 {
-  tmin = 0.0d0, tmax  = 0.50,
+  tmin = 0.0d0, tmax  = 500,
 }
 
 !----------field solver set up----------
@@ -109,7 +111,7 @@ species
   name = "e",
   !num_par_max = 6000000,
   rqm=-1.0,
-  num_par_x(1:2) = 2, 2, 
+  num_par_x(1:2) = 4, 4, 
   !if_collide = .true.,
   !if_like_collide = .true.,
 }
@@ -160,7 +162,7 @@ species
   name = "i",
   !num_par_max = 6000000,
   rqm=100.0,
-  num_par_x(1:2) = 2, 2,
+  num_par_x(1:2) = 4, 4,
   !q_real = 1.0,
   !if_collide = .true.,
   !if_like_collide = .true.,
