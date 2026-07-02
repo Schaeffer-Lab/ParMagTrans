@@ -2,12 +2,13 @@
 simulation 
 {
   !algorithm = "cuda", 
+  parallel_io = "mpi",
 }
 
 !--------the node configuration for this simulation--------
 node_conf 
 {
-  node_number(1:2) = 4, 4,
+  node_number(1:2) = 8, 16,
   if_periodic(1:2) = .true., .true.,
   !tile_number(1:2) = 128,16,
   n_threads = 2,
@@ -42,7 +43,7 @@ space
 !----------time limits ----------
 time 
 {
-  tmin = 0.0d0, tmax  = 100,
+  tmin = 0.0d0, tmax  = 300,
 }
 
 !----------field solver set up----------
